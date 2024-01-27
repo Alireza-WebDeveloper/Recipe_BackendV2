@@ -10,6 +10,17 @@ const recipesRouter = require('./router/recipes');
 
 dotenv.config({ path: './config.env' });
 
+const app = express();
+app.use(express.static(`${__dirname}/public`));
+app.use(cors());
+app.use(express.json());
+
+// add routes
+app.use(morgan('dev'));
+app.use('/', rootRouter);
+app.use('/api/recipes', recipesRouter);
+app.use('/api/categories', categories);
+
 mongoose
   .connect(process.env.MONGOATLAS_URL, {
     dbName: process.env.MONGO_ATLAS_DB,
@@ -18,24 +29,12 @@ mongoose
     writeConcern: { w: 'majority' },
   })
   .then(() => {
-    const app = express();
-    app.use(express.static('public'));
-    app.use(cors());
-    app.use(express.json());
-
-    // add routes
-    app.use(morgan('dev'));
-    app.use('/', rootRouter);
-    app.use('/api/recipes', recipesRouter);
-    app.use('/api/categories', categories);
-    app.listen(
-      process.env.PORT || 3000,
-      process.env.HOST || 'localhost',
-      () => {
-        console.log('Server Start');
-      }
-    );
+    console.log('MongoDb Connect');
   })
   .catch((err) => {
     console.log(err);
   });
+
+app.listen(process.env.PORT || 3000, process.env.HOST || 'localhost', () => {
+  console.log('Server Start');
+});
